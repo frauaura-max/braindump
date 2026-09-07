@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <title>สมองสำรองของอุ๋ย</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,6 +41,7 @@
   .title { font-size: 25px; font-weight: 600; letter-spacing: -0.3px; display: flex; align-items: baseline; gap: 9px; }
   .title .dot { color: var(--gold); font-size: 28px; line-height: 0; }
   .sub { color: var(--muted); font-size: 14px; margin-top: 5px; font-weight: 300; }
+  .ver { color: var(--faint); font-size: 11px; font-weight: 400; margin-left: 6px; vertical-align: middle; }
   .gear { flex-shrink: 0; background: none; border: none; color: var(--faint); cursor: pointer; font-size: 20px; padding: 4px 6px; line-height: 1; transition: color .15s; }
   .gear:hover { color: var(--muted); }
 
@@ -160,7 +164,7 @@
   <div id="app" class="hidden">
     <div class="top">
       <div class="headings">
-        <div class="title"><span class="dot">●</span> สมองสำรองของอุ๋ย</div>
+        <div class="title"><span class="dot">●</span> สมองสำรองของอุ๋ย <span class="ver" id="ver">v3</span></div>
         <div class="sub">คิดออกเมื่อไหร่ โยนลงมา — แตะที่ข้อความเพื่อแก้ หรือเพิ่มรายละเอียดได้ทีหลัง</div>
       </div>
       <button class="gear" id="gear" title="ตั้งค่าการเชื่อมต่อ">⚙</button>
@@ -178,6 +182,7 @@
 <script>
 "use strict";
 
+const APP_VERSION = '3.0';
 const CFG_KEY = 'braindump_cfg';
 const LOCAL_KEY = 'braindump_items_v2';
 const TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -263,7 +268,7 @@ async function pushData(){
       if(r.ok){
         // Merge once more with current memory in case the user edited while this request was in flight.
         items=mergeItems(merged,items); sha=r.sha; saveLocalItems();
-        setSync('ok','ซิงค์แล้ว'); ok=true;
+        setSync('ok','ซิงค์แล้ว · v'+APP_VERSION); ok=true;
       } else if(r.status!==409){
         setSync('err','ซิงค์ไม่สำเร็จ · แตะลองใหม่'); break;
       }
@@ -286,7 +291,7 @@ async function pullData(silent){
         // Merge instead of replacing local memory, so offline edits are not lost.
         items=mergeItems(g.items,mergeItems(items,loadLocalItems())); sha=g.sha;
       }
-      saveLocalItems(); render(); setSync('ok','ซิงค์แล้ว'); return true;
+      saveLocalItems(); render(); setSync('ok','ซิงค์แล้ว · v'+APP_VERSION); return true;
     } else { setSync('err','โหลดไม่สำเร็จ · แตะลองใหม่'); return false; }
   }catch(e){
     // If offline, still show the last local copy rather than an empty screen.
@@ -447,11 +452,22 @@ $('gear').onclick=()=>showSetup(true);
 $('setup_back').onclick=showApp;
 $('connect').onclick=doConnect;
 $('peek').onclick=()=>{ const t=$('s_token'); const show=t.type==='password'; t.type=show?'text':'password'; $('peek').textContent=show?'ซ่อน':'แสดง'; };
-$('sync').onclick=()=>{ if($('sync').classList.contains('err')){ pending?pushData():pullData(); } };
+$('sync').onclick=()=>{ if(cfg && !saving) pullData(false); };
 $('s_token').addEventListener('keydown', e=>{ if(e.key==='Enter') doConnect(); });
-document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && cfg && !saving){ pullData(true); } });
+
+function safeAutoPull(){
+  if(!cfg || saving || document.visibilityState!=='visible') return;
+  const a=document.activeElement;
+  if(a && (a.classList?.contains('inlineedit') || a.classList?.contains('noteedit') || a.id==='box')) return;
+  pullData(true);
+}
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') safeAutoPull(); });
+window.addEventListener('focus', safeAutoPull);
+window.addEventListener('pageshow', safeAutoPull);
+setInterval(safeAutoPull, 15000);
 
 /* ---------- boot ---------- */
+$('ver').textContent='v'+APP_VERSION;
 cfg=loadCfg();
 items=normalizeItems(loadLocalItems());
 if(cfg && cfg.owner && cfg.repo && cfg.token){ showApp(); render(); pullData(); }
