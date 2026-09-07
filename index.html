@@ -38,19 +38,11 @@
   .title { font-size: 25px; font-weight: 600; letter-spacing: -0.3px; display: flex; align-items: baseline; gap: 9px; }
   .title .dot { color: var(--gold); font-size: 28px; line-height: 0; }
   .sub { color: var(--muted); font-size: 14px; margin-top: 5px; font-weight: 300; }
-  .gear {
-    flex-shrink: 0; background: none; border: none; color: var(--faint);
-    cursor: pointer; font-size: 20px; padding: 4px 6px; line-height: 1;
-    transition: color .15s;
-  }
+  .gear { flex-shrink: 0; background: none; border: none; color: var(--faint); cursor: pointer; font-size: 20px; padding: 4px 6px; line-height: 1; transition: color .15s; }
   .gear:hover { color: var(--muted); }
 
   /* sync pill */
-  .sync {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12.5px; color: var(--faint); margin-bottom: 16px;
-    cursor: default; user-select: none;
-  }
+  .sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--faint); margin-bottom: 16px; cursor: default; user-select: none; }
   .sync .dotmark { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
   .sync.saving .dotmark { background: var(--gold); animation: pulse 1s infinite; }
   .sync.err { color: var(--danger); cursor: pointer; }
@@ -58,24 +50,11 @@
   @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:1} }
 
   /* capture */
-  .capture {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--surface); border: 1px solid var(--line);
-    border-radius: 14px; padding: 4px 4px 4px 18px; margin-bottom: 22px;
-    transition: border-color .18s ease;
-  }
+  .capture { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px 4px 4px 18px; margin-bottom: 22px; transition: border-color .18s ease; }
   .capture:focus-within { border-color: var(--gold-dim); }
-  #box {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--text); font-family: inherit; font-size: 17px; padding: 14px 0;
-  }
+  #box { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 17px; padding: 14px 0; }
   #box::placeholder { color: var(--faint); font-weight: 300; }
-  .toss {
-    flex-shrink: 0; background: var(--gold); color: #241a08; border: none;
-    border-radius: 10px; height: 42px; padding: 0 18px; font-family: inherit;
-    font-size: 15px; font-weight: 600; cursor: pointer;
-    transition: background .15s ease, transform .05s ease;
-  }
+  .toss { flex-shrink: 0; background: var(--gold); color: #241a08; border: none; border-radius: 10px; height: 42px; padding: 0 18px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .15s ease, transform .05s ease; }
   .toss:hover { background: #e7b355; }
   .toss:active { transform: scale(.97); }
 
@@ -85,16 +64,29 @@
   .item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 12px 12px 14px; border-radius: 11px; transition: background .12s ease; }
   .item:hover { background: var(--surface); }
   .item:hover .del { opacity: 1; }
+  .item:hover .addnote { opacity: 1; }
   .check { flex-shrink: 0; width: 21px; height: 21px; margin-top: 2px; border-radius: 50%; border: 1.6px solid var(--faint); background: transparent; cursor: pointer; display: grid; place-items: center; transition: border-color .15s, background .15s; padding: 0; }
   .check:hover { border-color: var(--teal); }
   .check svg { opacity: 0; transition: opacity .12s; }
-  .txt { flex: 1; font-size: 16px; word-break: break-word; padding-top: 1px; }
+
+  .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .txt { font-size: 16px; word-break: break-word; cursor: text; padding-top: 1px; }
+  .note { font-size: 13.5px; color: var(--muted); font-weight: 300; white-space: pre-wrap; word-break: break-word; cursor: text; padding: 3px 0 1px; border-left: 2px solid var(--line); padding-left: 10px; margin-top: 3px; }
+  .addnote { align-self: flex-start; background: none; border: none; color: var(--faint); font-family: inherit; font-size: 12.5px; cursor: pointer; padding: 3px 0 0; opacity: .55; transition: opacity .12s, color .12s; }
+  .addnote:hover { color: var(--muted); opacity: 1; }
+  .inlineedit { width: 100%; background: var(--surface2); border: 1px solid var(--gold-dim); border-radius: 8px; padding: 8px 10px; color: var(--text); font-family: inherit; font-size: 16px; outline: none; }
+  .noteedit { width: 100%; background: var(--surface2); border: 1px solid var(--gold-dim); border-radius: 8px; padding: 8px 10px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; resize: none; line-height: 1.55; margin-top: 3px; overflow: hidden; }
+  .noteedit::placeholder { color: var(--faint); }
+
   .time { flex-shrink: 0; color: var(--faint); font-size: 12.5px; margin-top: 3px; font-variant-numeric: tabular-nums; }
   .del { flex-shrink: 0; background: none; border: none; color: var(--faint); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; opacity: 0; transition: opacity .12s, color .12s; }
   .del:hover { color: var(--danger); }
+
   .item.done .txt { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--faint); }
+  .item.done .note { color: var(--faint); }
   .item.done .check { border-color: var(--teal); background: var(--teal); }
   .item.done .check svg { opacity: 1; }
+
   .donehead { margin: 30px 2px 6px; color: var(--faint); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
   .donehead .clear { margin-left: auto; background: none; border: none; color: var(--faint); font-family: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   .donehead .clear:hover { color: var(--muted); }
@@ -108,20 +100,12 @@
   .setup p.lead { color: var(--muted); font-size: 14.5px; font-weight: 300; margin-bottom: 22px; line-height: 1.6; }
   .field { margin-bottom: 15px; }
   .field label { display: block; font-size: 13.5px; color: var(--muted); margin-bottom: 6px; }
-  .field input {
-    width: 100%; background: var(--surface); border: 1px solid var(--line);
-    border-radius: 10px; padding: 12px 14px; color: var(--text);
-    font-family: inherit; font-size: 15px; outline: none; transition: border-color .15s;
-  }
+  .field input { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: inherit; font-size: 15px; outline: none; transition: border-color .15s; }
   .field input:focus { border-color: var(--gold-dim); }
   .field .hint { font-size: 12px; color: var(--faint); margin-top: 5px; font-weight: 300; }
   .pwrow { position: relative; }
   .pwrow .peek { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--faint); font-size: 12px; cursor: pointer; padding: 4px; }
-  .connect {
-    width: 100%; background: var(--gold); color: #241a08; border: none;
-    border-radius: 10px; padding: 14px; font-family: inherit; font-size: 16px;
-    font-weight: 600; cursor: pointer; margin-top: 8px; transition: background .15s;
-  }
+  .connect { width: 100%; background: var(--gold); color: #241a08; border: none; border-radius: 10px; padding: 14px; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background .15s; }
   .connect:hover { background: #e7b355; }
   .connect:disabled { opacity: .5; cursor: default; }
   .msg { font-size: 13.5px; margin-top: 14px; padding: 11px 14px; border-radius: 9px; line-height: 1.5; display: none; }
@@ -143,10 +127,9 @@
   <div id="setup" class="setup hidden">
     <h2><span style="color:var(--gold)">●</span> เชื่อมสมองสำรองเข้ากับ GitHub</h2>
     <p class="lead">กรอกครั้งเดียวต่อเครื่อง หลังจากนี้ทุกอุปกรณ์ที่เชื่อมด้วยข้อมูลเดียวกัน จะเห็นของเหมือนกันหมด</p>
-
     <div class="field">
       <label>GitHub username ของอุ๋ย</label>
-      <input id="s_owner" type="text" placeholder="เช่น uiwongsa" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <input id="s_owner" type="text" placeholder="เช่น frauaura-max" autocomplete="off" autocapitalize="off" spellcheck="false" />
     </div>
     <div class="field">
       <label>ชื่อ repo ที่ใช้เก็บข้อมูล (ตั้งเป็น private)</label>
@@ -156,20 +139,18 @@
     <div class="field">
       <label>Personal Access Token</label>
       <div class="pwrow">
-        <input id="s_token" type="password" placeholder="ghp_... หรือ github_pat_..." autocomplete="off" autocapitalize="off" spellcheck="false" />
+        <input id="s_token" type="password" placeholder="github_pat_..." autocomplete="off" autocapitalize="off" spellcheck="false" />
         <button class="peek" id="peek" type="button">แสดง</button>
       </div>
       <div class="hint">token เก็บอยู่ในเครื่องนี้เท่านั้น ไม่ถูกส่งไปที่อื่นนอกจาก GitHub</div>
     </div>
-
     <button class="connect" id="connect">เชื่อมต่อ</button>
     <div class="msg" id="setupmsg"></div>
-
     <div class="guide">
       <b>ยังไม่มี repo หรือ token?</b><br>
       1. สร้าง repo ใหม่ชื่อ <b>braindump-data</b> ตั้งเป็น <b>Private</b><br>
-      2. ไปที่ Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b><br>
-      3. สร้าง token ให้สิทธิ์เฉพาะ repo braindump-data → Permissions → <b>Contents: Read and write</b><br>
+      2. Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b><br>
+      3. ให้สิทธิ์เฉพาะ repo braindump-data → Permissions → <b>Contents: Read and write</b><br>
       4. ก๊อป token มาวางช่องด้านบน (มีคู่มือละเอียดในไฟล์ README.md)
     </div>
     <button class="logout hidden" id="setup_back">← กลับไปหน้าสมองสำรอง</button>
@@ -180,18 +161,15 @@
     <div class="top">
       <div class="headings">
         <div class="title"><span class="dot">●</span> สมองสำรองของอุ๋ย</div>
-        <div class="sub">คิดออกเมื่อไหร่ โยนลงมาตรงนี้ — เห็นเหมือนกันทุกเครื่อง</div>
+        <div class="sub">คิดออกเมื่อไหร่ โยนลงมา — แตะที่ข้อความเพื่อแก้ หรือเพิ่มรายละเอียดได้ทีหลัง</div>
       </div>
       <button class="gear" id="gear" title="ตั้งค่าการเชื่อมต่อ">⚙</button>
     </div>
-
     <div class="sync" id="sync"><span class="dotmark"></span><span id="synctext">ซิงค์แล้ว</span></div>
-
     <div class="capture">
       <input id="box" type="text" placeholder="คิดอะไรออก... พิมพ์แล้วกด Enter" autocomplete="off" />
       <button class="toss" id="toss">โยนลง</button>
     </div>
-
     <div id="list"></div>
   </div>
 
@@ -204,124 +182,68 @@ const CFG_KEY = 'braindump_cfg';
 const TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const CHECK = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#1b1510" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-let cfg = null;        // {owner, repo, token}
-let items = [];        // [{id,text,ts,done}]
-let sha = null;        // current data.json sha on GitHub
+let cfg = null;
+let items = [];
+let sha = null;
 let saving = false;
 let pending = false;
 
 const $ = id => document.getElementById(id);
 
 /* ---------- config ---------- */
-function loadCfg() {
-  try { const raw = localStorage.getItem(CFG_KEY); return raw ? JSON.parse(raw) : null; }
-  catch (e) { return null; }
-}
-function saveCfg(c) { try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch (e) {} }
-function clearCfg() { try { localStorage.removeItem(CFG_KEY); } catch (e) {} }
+function loadCfg(){ try { const r=localStorage.getItem(CFG_KEY); return r?JSON.parse(r):null; } catch(e){ return null; } }
+function saveCfg(c){ try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch(e){} }
 
 /* ---------- utf-8 <-> base64 ---------- */
-function utf8ToB64(str) {
-  const bytes = new TextEncoder().encode(str);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin);
-}
-function b64ToUtf8(b64) {
-  const clean = b64.replace(/\s/g, '');
-  const bin = atob(clean);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new TextDecoder().decode(bytes);
-}
+function utf8ToB64(str){ const b=new TextEncoder().encode(str); let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
+function b64ToUtf8(b64){ const c=b64.replace(/\s/g,''); const bin=atob(c); const b=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return new TextDecoder().decode(b); }
 
 /* ---------- github api ---------- */
-function ghUrl() {
-  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json`;
+function ghUrl(){ return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json`; }
+function ghHeaders(){ return { 'Authorization':'Bearer '+cfg.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }; }
+async function ghGet(){
+  const res=await fetch(ghUrl(),{headers:ghHeaders(),cache:'no-store'});
+  if(res.status===404) return {ok:true,missing:true};
+  if(!res.ok) return {ok:false,status:res.status};
+  const data=await res.json();
+  let parsed=[]; try{ parsed=JSON.parse(b64ToUtf8(data.content)); }catch(e){ parsed=[]; }
+  if(!Array.isArray(parsed)) parsed=[];
+  return {ok:true,items:parsed,sha:data.sha};
 }
-function ghHeaders() {
-  return {
-    'Authorization': 'Bearer ' + cfg.token,
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28'
-  };
-}
-// returns {ok, status, items?, sha?, missing?}
-async function ghGet() {
-  const res = await fetch(ghUrl(), { headers: ghHeaders(), cache: 'no-store' });
-  if (res.status === 404) return { ok: true, missing: true };
-  if (!res.ok) return { ok: false, status: res.status };
-  const data = await res.json();
-  let parsed = [];
-  try { parsed = JSON.parse(b64ToUtf8(data.content)); } catch (e) { parsed = []; }
-  if (!Array.isArray(parsed)) parsed = [];
-  return { ok: true, items: parsed, sha: data.sha };
-}
-// writes items; returns {ok, sha?, status?}
-async function ghPut(arr, curSha) {
-  const body = {
-    message: 'update braindump ' + new Date().toISOString(),
-    content: utf8ToB64(JSON.stringify(arr, null, 2))
-  };
-  if (curSha) body.sha = curSha;
-  const res = await fetch(ghUrl(), { method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body) });
-  if (!res.ok) return { ok: false, status: res.status };
-  const data = await res.json();
-  return { ok: true, sha: data.content ? data.content.sha : null };
+async function ghPut(arr,curSha){
+  const body={ message:'update braindump '+new Date().toISOString(), content:utf8ToB64(JSON.stringify(arr,null,2)) };
+  if(curSha) body.sha=curSha;
+  const res=await fetch(ghUrl(),{method:'PUT',headers:ghHeaders(),body:JSON.stringify(body)});
+  if(!res.ok) return {ok:false,status:res.status};
+  const data=await res.json();
+  return {ok:true,sha:data.content?data.content.sha:null};
 }
 
 /* ---------- sync ---------- */
-function setSync(state, text) {
-  const el = $('sync');
-  el.className = 'sync' + (state === 'saving' ? ' saving' : state === 'err' ? ' err' : '');
-  $('synctext').textContent = text;
+function setSync(state,text){ const el=$('sync'); el.className='sync'+(state==='saving'?' saving':state==='err'?' err':''); $('synctext').textContent=text; }
+async function pushData(){
+  if(saving){ pending=true; return; }
+  saving=true; pending=false; setSync('saving','กำลังซิงค์…');
+  try{
+    let r=await ghPut(items,sha);
+    if(!r.ok && r.status===409){ const g=await ghGet(); if(g.ok&&!g.missing){ sha=g.sha; r=await ghPut(items,sha); } }
+    if(r.ok){ sha=r.sha; setSync('ok','ซิงค์แล้ว'); } else { setSync('err','ซิงค์ไม่สำเร็จ · แตะลองใหม่'); }
+  }catch(e){ setSync('err','ออฟไลน์อยู่ · แตะลองใหม่'); }
+  saving=false; if(pending) pushData();
+}
+async function pullData(silent){
+  if(!silent) setSync('saving','กำลังโหลด…');
+  try{
+    const g=await ghGet();
+    if(g.ok){
+      if(g.missing){ const c=await ghPut([],null); if(c.ok) sha=c.sha; items=[]; }
+      else { items=g.items; sha=g.sha; }
+      render(); setSync('ok','ซิงค์แล้ว'); return true;
+    } else { setSync('err','โหลดไม่สำเร็จ · แตะลองใหม่'); return false; }
+  }catch(e){ setSync('err','ออฟไลน์อยู่ · แตะลองใหม่'); return false; }
 }
 
-async function pushData() {
-  if (saving) { pending = true; return; }
-  saving = true; pending = false;
-  setSync('saving', 'กำลังซิงค์…');
-  try {
-    let r = await ghPut(items, sha);
-    if (!r.ok && r.status === 409) {         // conflict: another device wrote — refetch sha, retry once (this device wins)
-      const g = await ghGet();
-      if (g.ok && !g.missing) { sha = g.sha; r = await ghPut(items, sha); }
-    }
-    if (r.ok) { sha = r.sha; setSync('ok', 'ซิงค์แล้ว'); }
-    else { setSync('err', 'ซิงค์ไม่สำเร็จ · แตะลองใหม่'); }
-  } catch (e) {
-    setSync('err', 'ออฟไลน์อยู่ · แตะลองใหม่');
-  }
-  saving = false;
-  if (pending) pushData();
-}
-
-async function pullData(silent) {
-  if (!silent) setSync('saving', 'กำลังโหลด…');
-  try {
-    const g = await ghGet();
-    if (g.ok) {
-      if (g.missing) {                 // first time: create empty file
-        const c = await ghPut([], null);
-        if (c.ok) sha = c.sha;
-        items = [];
-      } else {
-        items = g.items; sha = g.sha;
-      }
-      render();
-      setSync('ok', 'ซิงค์แล้ว');
-      return true;
-    } else {
-      setSync('err', 'โหลดไม่สำเร็จ · แตะลองใหม่');
-      return false;
-    }
-  } catch (e) {
-    setSync('err', 'ออฟไลน์อยู่ · แตะลองใหม่');
-    return false;
-  }
-}
-
-/* ---------- rendering ---------- */
+/* ---------- date helpers ---------- */
 function dayKey(ts){ const d=new Date(ts); return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate(); }
 function dayLabel(ts){
   const now=new Date(), d=new Date(ts);
@@ -334,15 +256,70 @@ function dayLabel(ts){
 }
 function timeLabel(ts){ const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 
+/* ---------- inline editing ---------- */
+function editText(it, txtEl){
+  const input=document.createElement('input');
+  input.type='text'; input.className='inlineedit'; input.value=it.text;
+  txtEl.replaceWith(input); input.focus();
+  input.setSelectionRange(input.value.length,input.value.length);
+  let closed=false;
+  const commit=(save)=>{ if(closed) return; closed=true;
+    const v=input.value.trim();
+    if(save && v && v!==it.text){ it.text=v; pushData(); }
+    render();
+  };
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();commit(true);} else if(e.key==='Escape'){e.preventDefault();commit(false);} });
+  input.addEventListener('blur',()=>commit(true));
+}
+function editNote(it, srcEl){
+  const ta=document.createElement('textarea');
+  ta.className='noteedit'; ta.value=it.note||''; ta.rows=2;
+  ta.placeholder='พิมพ์รายละเอียด เช่น ส่งเมลหา…, นัดประชุมพุธ  (กด Enter ขึ้นบรรทัดใหม่ได้)';
+  srcEl.replaceWith(ta); ta.focus();
+  const grow=()=>{ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; };
+  grow(); ta.setSelectionRange(ta.value.length,ta.value.length);
+  let closed=false;
+  const commit=(save)=>{ if(closed) return; closed=true;
+    if(save){ const v=ta.value.trim(); if((it.note||'')!==v){ it.note=v; pushData(); } }
+    render();
+  };
+  ta.addEventListener('input',grow);
+  ta.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); commit(true); }
+    else if(e.key==='Escape'){ e.preventDefault(); commit(false); }
+  });
+  ta.addEventListener('blur',()=>commit(true));
+}
+
+/* ---------- rendering ---------- */
 function itemEl(it, flash){
   const el=document.createElement('div');
   el.className='item'+(it.done?' done':'')+(flash?' newflash':'');
-  el.innerHTML='<button class="check" aria-label="ทำเสร็จ">'+CHECK+'</button>'+
-    '<div class="txt"></div><div class="time">'+timeLabel(it.ts)+'</div>'+
-    '<button class="del" aria-label="ลบ">✕</button>';
-  el.querySelector('.txt').textContent=it.text;
-  el.querySelector('.check').onclick=()=>toggle(it.id);
-  el.querySelector('.del').onclick=()=>remove(it.id);
+
+  const check=document.createElement('button');
+  check.className='check'; check.setAttribute('aria-label','ทำเสร็จ'); check.innerHTML=CHECK;
+  check.onclick=()=>toggle(it.id);
+
+  const body=document.createElement('div'); body.className='body';
+  const txt=document.createElement('div'); txt.className='txt'; txt.textContent=it.text; txt.title='แตะเพื่อแก้';
+  txt.onclick=()=>editText(it, txt);
+  body.appendChild(txt);
+
+  if(it.note && it.note.trim()){
+    const note=document.createElement('div'); note.className='note'; note.textContent=it.note; note.title='แตะเพื่อแก้';
+    note.onclick=()=>editNote(it, note);
+    body.appendChild(note);
+  } else {
+    const addn=document.createElement('button'); addn.className='addnote'; addn.textContent='＋ รายละเอียด';
+    addn.onclick=()=>editNote(it, addn);
+    body.appendChild(addn);
+  }
+
+  const time=document.createElement('div'); time.className='time'; time.textContent=timeLabel(it.ts);
+  const del=document.createElement('button'); del.className='del'; del.setAttribute('aria-label','ลบ'); del.textContent='✕';
+  del.onclick=()=>remove(it.id);
+
+  el.appendChild(check); el.appendChild(body); el.appendChild(time); el.appendChild(del);
   return el;
 }
 function render(flashId){
@@ -371,14 +348,14 @@ function render(flashId){
 /* ---------- actions ---------- */
 function add(){
   const box=$('box'); const text=box.value.trim(); if(!text) return;
-  const it={id:Date.now()+''+Math.floor(Math.random()*999), text, ts:Date.now(), done:false};
+  const it={id:Date.now()+''+Math.floor(Math.random()*999), text, note:'', ts:Date.now(), done:false};
   items.unshift(it); box.value=''; render(it.id); box.focus(); pushData();
 }
 function toggle(id){ const it=items.find(i=>i.id===id); if(!it)return; it.done=!it.done; render(); pushData(); }
 function remove(id){ items=items.filter(i=>i.id!==id); render(); pushData(); }
 function clearDone(){ items=items.filter(i=>!i.done); render(); pushData(); }
 
-/* ---------- screen switching ---------- */
+/* ---------- screens ---------- */
 function showApp(){ $('setup').classList.add('hidden'); $('app').classList.remove('hidden'); $('box').focus(); }
 function showSetup(editing){
   $('app').classList.add('hidden'); $('setup').classList.remove('hidden');
@@ -386,26 +363,15 @@ function showSetup(editing){
   $('setup_back').classList.toggle('hidden', !editing);
   if(cfg){ $('s_owner').value=cfg.owner||''; $('s_repo').value=cfg.repo||'braindump-data'; $('s_token').value=cfg.token||''; }
 }
-
-/* ---------- setup handlers ---------- */
 async function doConnect(){
-  const owner=$('s_owner').value.trim();
-  const repo=$('s_repo').value.trim();
-  const token=$('s_token').value.trim();
+  const owner=$('s_owner').value.trim(), repo=$('s_repo').value.trim(), token=$('s_token').value.trim();
   const msg=$('setupmsg');
   if(!owner||!repo||!token){ msg.className='msg show bad'; msg.textContent='กรอกให้ครบทั้งสามช่องก่อนนะ'; return; }
   $('connect').disabled=true; msg.className='msg show'; msg.style.color='var(--muted)'; msg.textContent='กำลังทดสอบการเชื่อมต่อ…';
   cfg={owner,repo,token};
   const ok=await pullData(true);
-  if(ok){
-    saveCfg(cfg);
-    msg.className='msg show ok'; msg.textContent='เชื่อมต่อสำเร็จ! กำลังเข้าสมองสำรอง…';
-    setTimeout(showApp, 700);
-  } else {
-    msg.className='msg show bad';
-    msg.innerHTML='เชื่อมต่อไม่ได้ ลองเช็ก: ชื่อ username/repo ถูกไหม · token หมดอายุหรือสิทธิ์ Contents ครบไหม · repo braindump-data สร้างแล้วหรือยัง';
-    cfg=null;
-  }
+  if(ok){ saveCfg(cfg); msg.className='msg show ok'; msg.textContent='เชื่อมต่อสำเร็จ! กำลังเข้าสมองสำรอง…'; setTimeout(showApp,700); }
+  else { msg.className='msg show bad'; msg.innerHTML='เชื่อมต่อไม่ได้ ลองเช็ก: username/repo ถูกไหม · token หมดอายุหรือสิทธิ์ Contents ครบไหม · repo braindump-data สร้างแล้วยัง'; cfg=null; }
   $('connect').disabled=false;
 }
 
@@ -416,13 +382,11 @@ $('gear').onclick=()=>showSetup(true);
 $('setup_back').onclick=showApp;
 $('connect').onclick=doConnect;
 $('peek').onclick=()=>{ const t=$('s_token'); const show=t.type==='password'; t.type=show?'text':'password'; $('peek').textContent=show?'ซ่อน':'แสดง'; };
-$('sync').onclick=()=>{ if($('sync').classList.contains('err')) { pending?pushData():pullData(); } };
+$('sync').onclick=()=>{ if($('sync').classList.contains('err')){ pending?pushData():pullData(); } };
 $('s_token').addEventListener('keydown', e=>{ if(e.key==='Enter') doConnect(); });
-
-// refetch when returning to the tab (pick up edits from other devices)
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && cfg && !saving){ pullData(true); } });
 
-// boot
+/* ---------- boot ---------- */
 cfg=loadCfg();
 if(cfg && cfg.owner && cfg.repo && cfg.token){ showApp(); pullData(); }
 else { showSetup(false); }
