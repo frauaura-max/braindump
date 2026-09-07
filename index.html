@@ -179,6 +179,7 @@
 "use strict";
 
 const CFG_KEY = 'braindump_cfg';
+const LOCAL_KEY = 'braindump_items_v2';
 const TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const CHECK = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#1b1510" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -193,6 +194,29 @@ const $ = id => document.getElementById(id);
 /* ---------- config ---------- */
 function loadCfg(){ try { const r=localStorage.getItem(CFG_KEY); return r?JSON.parse(r):null; } catch(e){ return null; } }
 function saveCfg(c){ try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch(e){} }
+function loadLocalItems(){ try { const r=localStorage.getItem(LOCAL_KEY); const a=r?JSON.parse(r):[]; return Array.isArray(a)?a:[]; } catch(e){ return []; } }
+function saveLocalItems(){ try { localStorage.setItem(LOCAL_KEY, JSON.stringify(items)); } catch(e){} }
+function normalizeItem(it){
+  const baseTs=Number(it && it.ts)||Date.now();
+  return {
+    id:String(it && it.id!=null?it.id:(baseTs+''+Math.floor(Math.random()*999))),
+    text:String(it && it.text!=null?it.text:''),
+    note:String(it && it.note!=null?it.note:''),
+    ts:baseTs,
+    done:!!(it && it.done),
+    updatedAt:Number(it && it.updatedAt)||baseTs,
+    deleted:!!(it && it.deleted)
+  };
+}
+function normalizeItems(arr){ return (Array.isArray(arr)?arr:[]).map(normalizeItem); }
+function mergeItems(a,b){
+  const m=new Map();
+  for(const raw of [...normalizeItems(a), ...normalizeItems(b)]){
+    const cur=m.get(raw.id);
+    if(!cur || raw.updatedAt>cur.updatedAt || (raw.updatedAt===cur.updatedAt && raw.deleted && !cur.deleted)) m.set(raw.id,raw);
+  }
+  return Array.from(m.values()).sort((x,y)=> (y.ts||0)-(x.ts||0));
+}
 
 /* ---------- utf-8 <-> base64 ---------- */
 function utf8ToB64(str){ const b=new TextEncoder().encode(str); let s=''; for(let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
@@ -208,7 +232,7 @@ async function ghGet(){
   const data=await res.json();
   let parsed=[]; try{ parsed=JSON.parse(b64ToUtf8(data.content)); }catch(e){ parsed=[]; }
   if(!Array.isArray(parsed)) parsed=[];
-  return {ok:true,items:parsed,sha:data.sha};
+  return {ok:true,items:normalizeItems(parsed),sha:data.sha};
 }
 async function ghPut(arr,curSha){
   const body={ message:'update braindump '+new Date().toISOString(), content:utf8ToB64(JSON.stringify(arr,null,2)) };
@@ -219,15 +243,33 @@ async function ghPut(arr,curSha){
   return {ok:true,sha:data.content?data.content.sha:null};
 }
 
-/* ---------- sync ---------- */
+/* ---------- sync (multi-device safe) ---------- */
 function setSync(state,text){ const el=$('sync'); el.className='sync'+(state==='saving'?' saving':state==='err'?' err':''); $('synctext').textContent=text; }
 async function pushData(){
   if(saving){ pending=true; return; }
   saving=true; pending=false; setSync('saving','กำลังซิงค์…');
   try{
-    let r=await ghPut(items,sha);
-    if(!r.ok && r.status===409){ const g=await ghGet(); if(g.ok&&!g.missing){ sha=g.sha; r=await ghPut(items,sha); } }
-    if(r.ok){ sha=r.sha; setSync('ok','ซิงค์แล้ว'); } else { setSync('err','ซิงค์ไม่สำเร็จ · แตะลองใหม่'); }
+    // Always merge with the newest GitHub copy before writing.
+    // This prevents a stale device from replacing the whole file.
+    let attempts=0, ok=false;
+    while(attempts<3 && !ok){
+      attempts++;
+      const g=await ghGet();
+      if(!g.ok && !g.missing){ setSync('err','ซิงค์ไม่สำเร็จ · แตะลองใหม่'); break; }
+      const remote=g.missing?[]:g.items;
+      const merged=mergeItems(remote,items);
+      const curSha=g.missing?null:g.sha;
+      const r=await ghPut(merged,curSha);
+      if(r.ok){
+        // Merge once more with current memory in case the user edited while this request was in flight.
+        items=mergeItems(merged,items); sha=r.sha; saveLocalItems();
+        setSync('ok','ซิงค์แล้ว'); ok=true;
+      } else if(r.status!==409){
+        setSync('err','ซิงค์ไม่สำเร็จ · แตะลองใหม่'); break;
+      }
+      // 409 = another device wrote first; loop, fetch latest, merge again.
+    }
+    if(!ok && attempts>=3) setSync('err','มีการแก้พร้อมกัน · แตะลองใหม่');
   }catch(e){ setSync('err','ออฟไลน์อยู่ · แตะลองใหม่'); }
   saving=false; if(pending) pushData();
 }
@@ -236,11 +278,21 @@ async function pullData(silent){
   try{
     const g=await ghGet();
     if(g.ok){
-      if(g.missing){ const c=await ghPut([],null); if(c.ok) sha=c.sha; items=[]; }
-      else { items=g.items; sha=g.sha; }
-      render(); setSync('ok','ซิงค์แล้ว'); return true;
+      if(g.missing){
+        // Keep anything captured locally (e.g. while offline) and create remote from it.
+        items=mergeItems(items,loadLocalItems());
+        const c=await ghPut(items,null); if(c.ok) sha=c.sha;
+      } else {
+        // Merge instead of replacing local memory, so offline edits are not lost.
+        items=mergeItems(g.items,mergeItems(items,loadLocalItems())); sha=g.sha;
+      }
+      saveLocalItems(); render(); setSync('ok','ซิงค์แล้ว'); return true;
     } else { setSync('err','โหลดไม่สำเร็จ · แตะลองใหม่'); return false; }
-  }catch(e){ setSync('err','ออฟไลน์อยู่ · แตะลองใหม่'); return false; }
+  }catch(e){
+    // If offline, still show the last local copy rather than an empty screen.
+    const local=loadLocalItems(); if(local.length){ items=mergeItems(items,local); render(); }
+    setSync('err','ออฟไลน์อยู่ · แตะลองใหม่'); return false;
+  }
 }
 
 /* ---------- date helpers ---------- */
@@ -265,7 +317,7 @@ function editText(it, txtEl){
   let closed=false;
   const commit=(save)=>{ if(closed) return; closed=true;
     const v=input.value.trim();
-    if(save && v && v!==it.text){ it.text=v; pushData(); }
+    if(save && v && v!==it.text){ it.text=v; it.updatedAt=Date.now(); saveLocalItems(); pushData(); }
     render();
   };
   input.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();commit(true);} else if(e.key==='Escape'){e.preventDefault();commit(false);} });
@@ -280,7 +332,7 @@ function editNote(it, srcEl){
   grow(); ta.setSelectionRange(ta.value.length,ta.value.length);
   let closed=false;
   const commit=(save)=>{ if(closed) return; closed=true;
-    if(save){ const v=ta.value.trim(); if((it.note||'')!==v){ it.note=v; pushData(); } }
+    if(save){ const v=ta.value.trim(); if((it.note||'')!==v){ it.note=v; it.updatedAt=Date.now(); saveLocalItems(); pushData(); } }
     render();
   };
   ta.addEventListener('input',grow);
@@ -324,8 +376,9 @@ function itemEl(it, flash){
 }
 function render(flashId){
   const list=$('list'); list.innerHTML='';
-  const active=items.filter(i=>!i.done), done=items.filter(i=>i.done);
-  if(items.length===0){
+  const visible=items.filter(i=>!i.deleted);
+  const active=visible.filter(i=>!i.done), done=visible.filter(i=>i.done);
+  if(visible.length===0){
     const e=document.createElement('div'); e.className='empty';
     e.innerHTML='ยังไม่มีอะไรในหัวเลย<br>(หรือลืมไปหมดแล้วก็ไม่รู้ 😆)<br>— พิมพ์อันแรกด้านบนได้เลย';
     list.appendChild(e); return;
@@ -348,12 +401,24 @@ function render(flashId){
 /* ---------- actions ---------- */
 function add(){
   const box=$('box'); const text=box.value.trim(); if(!text) return;
-  const it={id:Date.now()+''+Math.floor(Math.random()*999), text, note:'', ts:Date.now(), done:false};
-  items.unshift(it); box.value=''; render(it.id); box.focus(); pushData();
+  const now=Date.now();
+  const it={id:now+''+Math.floor(Math.random()*999), text, note:'', ts:now, done:false, updatedAt:now, deleted:false};
+  items.unshift(it); saveLocalItems(); box.value=''; render(it.id); box.focus(); pushData();
 }
-function toggle(id){ const it=items.find(i=>i.id===id); if(!it)return; it.done=!it.done; render(); pushData(); }
-function remove(id){ items=items.filter(i=>i.id!==id); render(); pushData(); }
-function clearDone(){ items=items.filter(i=>!i.done); render(); pushData(); }
+function toggle(id){
+  const it=items.find(i=>i.id===id); if(!it)return;
+  it.done=!it.done; it.updatedAt=Date.now(); saveLocalItems(); render(); pushData();
+}
+function remove(id){
+  const it=items.find(i=>i.id===id); if(!it)return;
+  // Tombstone: keep a hidden delete marker so an old/offline device cannot resurrect it.
+  it.deleted=true; it.updatedAt=Date.now(); saveLocalItems(); render(); pushData();
+}
+function clearDone(){
+  const now=Date.now();
+  items.forEach(it=>{ if(it.done && !it.deleted){ it.deleted=true; it.updatedAt=now; } });
+  saveLocalItems(); render(); pushData();
+}
 
 /* ---------- screens ---------- */
 function showApp(){ $('setup').classList.add('hidden'); $('app').classList.remove('hidden'); $('box').focus(); }
@@ -388,7 +453,8 @@ document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState=
 
 /* ---------- boot ---------- */
 cfg=loadCfg();
-if(cfg && cfg.owner && cfg.repo && cfg.token){ showApp(); pullData(); }
+items=normalizeItems(loadLocalItems());
+if(cfg && cfg.owner && cfg.repo && cfg.token){ showApp(); render(); pullData(); }
 else { showSetup(false); }
 </script>
 </body>
