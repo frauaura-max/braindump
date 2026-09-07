@@ -182,7 +182,7 @@
 <script>
 "use strict";
 
-const APP_VERSION = '3.0';
+const APP_VERSION = '3.1';
 const CFG_KEY = 'braindump_cfg';
 const LOCAL_KEY = 'braindump_items_v2';
 const TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -278,6 +278,13 @@ async function pushData(){
   }catch(e){ setSync('err','ออฟไลน์อยู่ · แตะลองใหม่'); }
   saving=false; if(pending) pushData();
 }
+function stateSig(arr){
+  return JSON.stringify(normalizeItems(arr)
+    .slice()
+    .sort((a,b)=>String(a.id).localeCompare(String(b.id)))
+    .map(i=>[i.id,i.text,i.note,i.ts,i.done,i.updatedAt,i.deleted]));
+}
+
 async function pullData(silent){
   if(!silent) setSync('saving','กำลังโหลด…');
   try{
@@ -286,12 +293,25 @@ async function pullData(silent){
       if(g.missing){
         // Keep anything captured locally (e.g. while offline) and create remote from it.
         items=mergeItems(items,loadLocalItems());
-        const c=await ghPut(items,null); if(c.ok) sha=c.sha;
+        saveLocalItems(); render();
+        const c=await ghPut(items,null);
+        if(c.ok){ sha=c.sha; setSync('ok','ซิงค์แล้ว · v'+APP_VERSION); return true; }
+        setSync('err','ซิงค์ไม่สำเร็จ · แตะลองใหม่'); return false;
       } else {
-        // Merge instead of replacing local memory, so offline edits are not lost.
-        items=mergeItems(g.items,mergeItems(items,loadLocalItems())); sha=g.sha;
+        // Merge GitHub + this device + local backup.
+        // v3.0 stopped here, so each device could keep private local-only items forever.
+        // v3.1 writes the merged union back to GitHub when it differs from the server,
+        // so every device converges to the same data set.
+        const remote=g.items;
+        const merged=mergeItems(remote,mergeItems(items,loadLocalItems()));
+        items=merged; sha=g.sha; saveLocalItems(); render();
+
+        if(stateSig(merged)!==stateSig(remote)){
+          await pushData();
+          return !document.getElementById('sync').classList.contains('err');
+        }
       }
-      saveLocalItems(); render(); setSync('ok','ซิงค์แล้ว · v'+APP_VERSION); return true;
+      setSync('ok','ซิงค์แล้ว · v'+APP_VERSION); return true;
     } else { setSync('err','โหลดไม่สำเร็จ · แตะลองใหม่'); return false; }
   }catch(e){
     // If offline, still show the last local copy rather than an empty screen.
