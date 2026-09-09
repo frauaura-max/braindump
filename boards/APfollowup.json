@@ -1,4 +1,12 @@
 {
   "name": "A&P follow up",
-  "items": []
+  "items": [
+    {
+      "id": "1788928555272156",
+      "text": "ส่ง Slide ที่จะคุยกับ Brand Team 14/9 ก่อนเที่ยง",
+      "note": "",
+      "ts": 1788928555272,
+      "done": false
+    }
+  ]
 }
