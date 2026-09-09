@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex,nofollow,noarchive" />
-<title>กระดานงาน · สมองสำรอง</title>
+<title>กระดานงาน · Work Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -30,6 +30,10 @@
   .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0 4px; }
   .chip { background: var(--surface); border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 13px; font-family: inherit; font-size: 12.5px; cursor: pointer; transition: border-color .15s, color .15s; }
   .chip:hover { border-color: var(--gold-dim); color: var(--text); }
+  .board-select-wrap { position: relative; display: inline-flex; align-items: center; }
+  .board-select { appearance: none; -webkit-appearance: none; background: var(--surface); border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 34px 6px 13px; font-family: inherit; font-size: 12.5px; cursor: pointer; min-width: 170px; max-width: 280px; transition: border-color .15s, color .15s; }
+  .board-select:hover, .board-select:focus { border-color: var(--gold-dim); color: var(--text); outline: none; }
+  .board-select-wrap::after { content: '▾'; position: absolute; right: 12px; color: var(--faint); pointer-events: none; font-size: 11px; }
   .readonly-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(88,160,143,.12); border: 1px solid rgba(88,160,143,.3); color: var(--teal); border-radius: 999px; padding: 6px 13px; font-size: 12.5px; }
 
   .sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--faint); margin: 12px 0 16px; user-select: none; }
@@ -148,8 +152,13 @@
     </div>
 
     <div class="bar" id="ownerbar">
-      <button class="chip" id="renameBtn">✎ ตั้งชื่อกระดาน</button>
-      <button class="chip" id="switchBtn">▾ สลับกระดาน</button>
+      <div class="board-select-wrap">
+        <select class="board-select" id="boardSelect" title="สลับกระดาน">
+          <option value="">กำลังโหลดกระดาน…</option>
+        </select>
+      </div>
+      <button class="chip" id="newBoardBtn">＋ กระดานใหม่</button>
+      <button class="chip" id="renameBtn">✎ ตั้งชื่อ</button>
       <button class="chip" id="shareBtn">🔗 ก๊อปลิงก์ให้ทีมดู</button>
     </div>
     <div class="bar" id="viewbar">
@@ -205,6 +214,7 @@ function b64ToUtf8(b64){ const c=b64.replace(/\s/g,''); const bin=atob(c); const
 
 /* ---------- github (owner writes; anyone reads public) ---------- */
 function apiUrl(owner, repo){ return `https://api.github.com/repos/${owner}/${repo}/contents/boards/${boardId}.json`; }
+function boardsDirUrl(owner, repo){ return `https://api.github.com/repos/${owner}/${repo}/contents/boards`; }
 function ownerHeaders(){ return { 'Authorization':'Bearer '+cfg.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }; }
 
 // read public with no token (works because repo is public)
@@ -234,6 +244,67 @@ async function ownerPut(curSha){
   if(!res.ok) return {ok:false, status:res.status};
   const data = await res.json();
   return {ok:true, sha:data.content?data.content.sha:null};
+}
+
+/* ---------- board directory / dropdown ---------- */
+async function listBoards(){
+  if(readOnly || !cfg || !cfg.owner || !cfg.repo) return [];
+  try{
+    const res = await fetch(boardsDirUrl(cfg.owner, cfg.repo) + '?t=' + Date.now(), { headers:ownerHeaders(), cache:'no-store' });
+    if(res.status===404) return [];
+    if(!res.ok) return [];
+    const files = await res.json();
+    if(!Array.isArray(files)) return [];
+    const jsonFiles = files.filter(f=>f && f.type==='file' && typeof f.name==='string' && f.name.endsWith('.json'));
+    const boards = await Promise.all(jsonFiles.map(async f=>{
+      const id = f.name.replace(/\.json$/,'');
+      let name = id;
+      try{
+        if(f.download_url){
+          const rr = await fetch(f.download_url + (f.download_url.includes('?')?'&':'?') + 't=' + Date.now(), {cache:'no-store'});
+          if(rr.ok){ const obj=await rr.json(); if(obj && typeof obj.name==='string' && obj.name.trim()) name=obj.name.trim(); }
+        }
+      }catch(e){}
+      return {id, name};
+    }));
+    boards.sort((a,b)=>a.name.localeCompare(b.name,'th'));
+    return boards;
+  }catch(e){ return []; }
+}
+
+async function refreshBoardDropdown(){
+  if(readOnly) return;
+  const sel=$('boardSelect');
+  if(!sel) return;
+  const previous=sel.value;
+  sel.innerHTML='';
+  const boards=await listBoards();
+  if(!boards.some(b=>b.id===boardId)) boards.push({id:boardId,name:boardName||boardId});
+  boards.sort((a,b)=>a.name.localeCompare(b.name,'th'));
+  boards.forEach(b=>{
+    const op=document.createElement('option'); op.value=b.id; op.textContent=b.name; if(b.id===boardId) op.selected=true; sel.appendChild(op);
+  });
+  if(!sel.options.length){ const op=document.createElement('option'); op.value=boardId; op.textContent=boardName||boardId; sel.appendChild(op); }
+  sel.value=boardId;
+}
+
+function updateCurrentBoardOption(){
+  const sel=$('boardSelect'); if(!sel) return;
+  const op=[...sel.options].find(o=>o.value===boardId); if(op) op.textContent=boardName||boardId;
+}
+
+function openBoard(id){
+  const clean=(id||'').replace(/[^a-zA-Z0-9_-]/g,'');
+  if(!clean || clean===boardId) return;
+  const u=new URL(location.href); u.search=''; u.searchParams.set('b',clean); location.href=u.toString();
+}
+
+function createBoard(){
+  const b=prompt('ตั้งรหัสกระดานใหม่ (อังกฤษ/ตัวเลข เช่น app-man, budget-q3):','');
+  if(!b) return;
+  const clean=b.trim().replace(/[^a-zA-Z0-9_-]/g,'');
+  if(!clean){ alert('ใช้ตัวอักษรอังกฤษ ตัวเลข - หรือ _ นะ'); return; }
+  openBoard(clean);
 }
 
 /* ---------- sync ---------- */
@@ -358,7 +429,7 @@ function render(flashId){
     done.forEach(it=>list.appendChild(itemEl(it,false)));
   }
 }
-function applyName(){ $('bname').textContent = boardName || boardId; document.title = (boardName||boardId) + ' · กระดาน'; }
+function applyName(){ $('bname').textContent = boardName || boardId; document.title = (boardName||boardId) + ' · กระดาน'; updateCurrentBoardOption(); }
 
 /* ---------- actions ---------- */
 function add(){ const box=$('box'); const text=box.value.trim(); if(!text) return; const it={id:Date.now()+''+Math.floor(Math.random()*999), text, note:'', ts:Date.now(), done:false}; items.unshift(it); box.value=''; render(it.id); box.focus(); changed(); }
@@ -368,7 +439,6 @@ function clearDone(){ items=items.filter(i=>!i.done); render(); changed(); }
 
 /* ---------- board bar ---------- */
 function doRename(){ const n=prompt('ตั้งชื่อกระดานนี้:', boardName||boardId); if(n===null) return; boardName=n.trim()||boardId; applyName(); changed(); }
-function doSwitch(){ const b=prompt('พิมพ์ชื่อกระดานที่จะเปิด (อังกฤษ/ตัวเลข เช่น budget-q3):', boardId); if(!b) return; const clean=b.replace(/[^a-zA-Z0-9_-]/g,''); if(clean) location.search='?b='+clean; }
 function doShare(){
   const owner = (cfg && cfg.owner) ? cfg.owner : PUBLIC_OWNER;
   const repo = (cfg && cfg.repo) ? cfg.repo : PUBLIC_REPO;
@@ -399,7 +469,7 @@ async function doConnect(){
   if(!w.ok){ msg.className='msg show bad'; if(w.status===401||w.status===403) msg.innerHTML='อ่านได้แต่ <b>เขียนไม่ได้</b> · token ต้องมี <b>Contents: Read and write</b> ของ repo นี้'; else msg.textContent='ทดสอบเขียนไม่ผ่าน'; cfg=null; $('connect').disabled=false; return; }
   sha=w.sha; dirty=false; saveCache(); saveCfg(cfg);
   msg.className='msg show ok'; msg.textContent='เชื่อมต่อสำเร็จ! กำลังเข้า…';
-  setTimeout(()=>{ applyName(); render(); showApp(); }, 700);
+  setTimeout(()=>{ applyName(); render(); showApp(); refreshBoardDropdown(); }, 700);
   $('connect').disabled=false;
 }
 
@@ -411,7 +481,8 @@ $('connect').onclick=doConnect;
 $('peek').onclick=()=>{ const t=$('s_token'); const show=t.type==='password'; t.type=show?'text':'password'; $('peek').textContent=show?'ซ่อน':'แสดง'; };
 $('s_token').addEventListener('keydown', e=>{ if(e.key==='Enter') doConnect(); });
 $('renameBtn').onclick=doRename;
-$('switchBtn').onclick=doSwitch;
+$('newBoardBtn').onclick=createBoard;
+$('boardSelect').addEventListener('change', e=>openBoard(e.target.value));
 $('shareBtn').onclick=doShare;
 $('refreshBtn').onclick=()=>loadView(ownerForView(), repoForView());
 $('sync').onclick=()=>{ if(!$('sync').classList.contains('err')) return; if(errKind==='perm'){ showSetup(); return; } if(dirty||pending) pushData(); else if(readOnly) loadView(ownerForView(), repoForView()); else loadOwner(); };
@@ -429,7 +500,7 @@ if(readOnly){
   loadView(ownerForView(), repoForView());
 } else {
   $('viewbar').classList.add('hidden');
-  if(cfg && cfg.owner && cfg.token){ cfg.repo = cfg.repo || PUBLIC_REPO; showApp(); loadOwner(); }
+  if(cfg && cfg.owner && cfg.token){ cfg.repo = cfg.repo || PUBLIC_REPO; showApp(); loadOwner(); refreshBoardDropdown(); }
   else { showSetup(); }
 }
 </script>
