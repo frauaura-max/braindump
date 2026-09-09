@@ -2,6 +2,13 @@
   "name": "App Man follow up",
   "items": [
     {
+      "id": "1788929183078870",
+      "text": "สรุป Case ความผิดพลาดของ IO",
+      "note": "",
+      "ts": 1788929183078,
+      "done": false
+    },
+    {
       "id": "1788929155352171",
       "text": "สรุป Master data ที่ต้องส่งให้  App Man ในส่นของ FP&A",
       "note": "",
