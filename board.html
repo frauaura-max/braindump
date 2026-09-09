@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex,nofollow,noarchive" />
+<title>กระดานงาน · สมองสำรอง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #1b1510; --surface: #241d16; --surface2: #2c241b; --line: #3a3025;
+    --text: #ece1ce; --muted: #94836a; --faint: #6c5f4c;
+    --gold: #d9a441; --gold-dim: #b98a35; --teal: #58a08f; --danger: #c07356;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); }
+  body { font-family: 'Anuphan', system-ui, -apple-system, sans-serif; color: var(--text); min-height: 100vh; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 620px; margin: 0 auto; padding: 26px 20px 80px; }
+
+  .top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
+  .top .headings { flex: 1; min-width: 0; }
+  .title { font-size: 24px; font-weight: 600; letter-spacing: -0.3px; display: flex; align-items: baseline; gap: 9px; }
+  .title .dot { color: var(--gold); font-size: 27px; line-height: 0; }
+  .title .bname { word-break: break-word; }
+  .gear { flex-shrink: 0; background: none; border: none; color: var(--faint); cursor: pointer; font-size: 20px; padding: 4px 6px; line-height: 1; transition: color .15s; }
+  .gear:hover { color: var(--muted); }
+
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0 4px; }
+  .chip { background: var(--surface); border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 13px; font-family: inherit; font-size: 12.5px; cursor: pointer; transition: border-color .15s, color .15s; }
+  .chip:hover { border-color: var(--gold-dim); color: var(--text); }
+  .readonly-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(88,160,143,.12); border: 1px solid rgba(88,160,143,.3); color: var(--teal); border-radius: 999px; padding: 6px 13px; font-size: 12.5px; }
+
+  .sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--faint); margin: 12px 0 16px; user-select: none; }
+  .sync .dotmark { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+  .sync.saving .dotmark { background: var(--gold); animation: pulse 1s infinite; }
+  .sync.err { color: var(--danger); cursor: pointer; }
+  .sync.err .dotmark { background: var(--danger); }
+  @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:1} }
+
+  .capture { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px 4px 4px 18px; margin-bottom: 22px; transition: border-color .18s ease; }
+  .capture:focus-within { border-color: var(--gold-dim); }
+  #box { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 17px; padding: 14px 0; }
+  #box::placeholder { color: var(--faint); font-weight: 300; }
+  .toss { flex-shrink: 0; background: var(--gold); color: #241a08; border: none; border-radius: 10px; height: 42px; padding: 0 18px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .15s ease, transform .05s ease; }
+  .toss:hover { background: #e7b355; }
+  .toss:active { transform: scale(.97); }
+
+  .daylabel { color: var(--muted); font-size: 13px; font-weight: 500; margin: 20px 2px 8px; display: flex; align-items: center; gap: 10px; }
+  .daylabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 12px 12px 14px; border-radius: 11px; transition: background .12s ease; }
+  .item:hover { background: var(--surface); }
+  .item:hover .del { opacity: 1; }
+  .item:hover .addnote { opacity: 1; }
+  .check { flex-shrink: 0; width: 21px; height: 21px; margin-top: 2px; border-radius: 50%; border: 1.6px solid var(--faint); background: transparent; cursor: pointer; display: grid; place-items: center; transition: border-color .15s, background .15s; padding: 0; }
+  .check:hover { border-color: var(--teal); }
+  .check svg { opacity: 0; transition: opacity .12s; }
+  .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .txt { font-size: 16px; word-break: break-word; cursor: text; padding-top: 1px; }
+  .note { font-size: 13.5px; color: var(--muted); font-weight: 300; white-space: pre-wrap; word-break: break-word; cursor: text; padding: 3px 0 1px 10px; border-left: 2px solid var(--line); margin-top: 3px; }
+  .addnote { align-self: flex-start; background: none; border: none; color: var(--faint); font-family: inherit; font-size: 12.5px; cursor: pointer; padding: 3px 0 0; opacity: .55; transition: opacity .12s, color .12s; }
+  .addnote:hover { color: var(--muted); opacity: 1; }
+  .inlineedit { width: 100%; background: var(--surface2); border: 1px solid var(--gold-dim); border-radius: 8px; padding: 8px 10px; color: var(--text); font-family: inherit; font-size: 16px; outline: none; }
+  .noteedit { width: 100%; background: var(--surface2); border: 1px solid var(--gold-dim); border-radius: 8px; padding: 8px 10px; color: var(--text); font-family: inherit; font-size: 14px; outline: none; resize: none; line-height: 1.55; margin-top: 3px; overflow: hidden; }
+  .noteedit::placeholder { color: var(--faint); }
+  .time { flex-shrink: 0; color: var(--faint); font-size: 12.5px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .del { flex-shrink: 0; background: none; border: none; color: var(--faint); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; opacity: 0; transition: opacity .12s, color .12s; }
+  .del:hover { color: var(--danger); }
+  .item.done .txt { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--faint); }
+  .item.done .note { color: var(--faint); }
+  .item.done .check { border-color: var(--teal); background: var(--teal); }
+  .item.done .check svg { opacity: 1; }
+  .donehead { margin: 30px 2px 6px; color: var(--faint); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+  .donehead .clear { margin-left: auto; background: none; border: none; color: var(--faint); font-family: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .donehead .clear:hover { color: var(--muted); }
+  .empty { text-align: center; color: var(--faint); font-size: 15px; font-weight: 300; padding: 46px 20px; line-height: 1.7; }
+  .newflash { animation: flash .5s ease; }
+  @keyframes flash { from { background: rgba(217,164,65,.14); } to { background: transparent; } }
+
+  /* read-only: hide all edit affordances */
+  body.ro .capture, body.ro .del, body.ro .addnote, body.ro .donehead .clear, body.ro .gear { display: none !important; }
+  body.ro .check { cursor: default; }
+  body.ro .txt, body.ro .note { cursor: default; }
+
+  .setup { max-width: 460px; margin: 8px auto 0; }
+  .setup h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .setup p.lead { color: var(--muted); font-size: 14.5px; font-weight: 300; margin-bottom: 22px; line-height: 1.6; }
+  .field { margin-bottom: 15px; }
+  .field label { display: block; font-size: 13.5px; color: var(--muted); margin-bottom: 6px; }
+  .field input { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: inherit; font-size: 15px; outline: none; transition: border-color .15s; }
+  .field input:focus { border-color: var(--gold-dim); }
+  .field .hint { font-size: 12px; color: var(--faint); margin-top: 5px; font-weight: 300; }
+  .pwrow { position: relative; }
+  .pwrow .peek { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--faint); font-size: 12px; cursor: pointer; padding: 4px; }
+  .connect { width: 100%; background: var(--gold); color: #241a08; border: none; border-radius: 10px; padding: 14px; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background .15s; }
+  .connect:hover { background: #e7b355; }
+  .connect:disabled { opacity: .5; cursor: default; }
+  .msg { font-size: 13.5px; margin-top: 14px; padding: 11px 14px; border-radius: 9px; line-height: 1.5; display: none; }
+  .msg.show { display: block; }
+  .msg.bad { background: rgba(192,115,86,.14); color: #e0a486; border: 1px solid rgba(192,115,86,.3); }
+  .msg.ok { background: rgba(88,160,143,.12); color: var(--teal); border: 1px solid rgba(88,160,143,.3); }
+  .setup .guide { margin-top: 22px; font-size: 13px; color: var(--faint); line-height: 1.7; border-top: 1px solid var(--line); padding-top: 18px; }
+  .setup .guide b { color: var(--muted); font-weight: 500; }
+  .hidden { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- SETUP (owner only) -->
+  <div id="setup" class="setup hidden">
+    <h2><span style="color:var(--gold)">●</span> เชื่อมกระดานงานเข้ากับ GitHub</h2>
+    <p class="lead">หน้านี้สำหรับเจ้าของ (คนที่แก้ได้) กรอกครั้งเดียวต่อเครื่อง · ทีมที่เข้ามาดูไม่ต้องกรอกอะไร</p>
+    <div class="field">
+      <label>GitHub username ของอุ๋ย</label>
+      <input id="s_owner" type="text" placeholder="เช่น frauaura-max" autocomplete="off" autocapitalize="off" spellcheck="false" />
+    </div>
+    <div class="field">
+      <label>ชื่อ repo สาธารณะ (ที่วางหน้าเว็บ)</label>
+      <input id="s_repo" type="text" value="braindump" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <div class="hint">ปกติคือ braindump — repo ที่ตั้งเป็น Public</div>
+    </div>
+    <div class="field">
+      <label>Personal Access Token</label>
+      <div class="pwrow">
+        <input id="s_token" type="password" placeholder="github_pat_..." autocomplete="off" autocapitalize="off" spellcheck="false" />
+        <button class="peek" id="peek" type="button">แสดง</button>
+      </div>
+      <div class="hint">แนะนำให้ใช้ token แยกสำหรับกระดานนี้ และให้สิทธิ์เฉพาะ repo braindump เท่านั้น</div>
+    </div>
+    <button class="connect" id="connect">เชื่อมต่อ</button>
+    <div class="msg" id="setupmsg"></div>
+    <div class="guide">
+      <b>แนะนำ:</b> สร้าง token ใหม่สำหรับกระดานงานโดยเฉพาะ และให้สิทธิ์เฉพาะ repo <b>braindump</b> แบบ <b>Contents: Read and write</b><br>
+      ไม่ต้องให้ token นี้เข้าถึง <b>braindump-data</b> เพื่อแยกจากสมองสำรองส่วนตัวให้ชัดเจน
+    </div>
+  </div>
+
+  <!-- APP / VIEW -->
+  <div id="app" class="hidden">
+    <div class="top">
+      <div class="headings">
+        <div class="title"><span class="dot">●</span> <span class="bname" id="bname">กระดาน</span></div>
+      </div>
+      <button class="gear" id="gear" title="ตั้งค่า">⚙</button>
+    </div>
+
+    <div class="bar" id="ownerbar">
+      <button class="chip" id="renameBtn">✎ ตั้งชื่อกระดาน</button>
+      <button class="chip" id="switchBtn">▾ สลับกระดาน</button>
+      <button class="chip" id="shareBtn">🔗 ก๊อปลิงก์ให้ทีมดู</button>
+    </div>
+    <div class="bar" id="viewbar">
+      <span class="readonly-badge">👁 อ่านอย่างเดียว</span>
+      <button class="chip" id="refreshBtn">↻ รีเฟรช</button>
+    </div>
+
+    <div class="sync" id="sync"><span class="dotmark"></span><span id="synctext">ซิงค์แล้ว</span></div>
+
+    <div class="capture">
+      <input id="box" type="text" placeholder="เพิ่มรายการ... พิมพ์แล้วกด Enter" autocomplete="off" />
+      <button class="toss" id="toss">เพิ่ม</button>
+    </div>
+
+    <div id="list"></div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+const TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const CHECK = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#1b1510" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const params = new URLSearchParams(location.search);
+const boardId = (params.get('b') || 'main').replace(/[^a-zA-Z0-9_-]/g,'') || 'main';
+const forceView = params.has('view');
+
+const PUBLIC_OWNER = 'frauaura-max';
+const PUBLIC_REPO = 'braindump';
+const CFG_KEY = 'workboard_cfg_v1';       // แยกจากสมองสำรองส่วนตัวโดยสิ้นเชิง
+const CACHE_KEY = 'workboard_cache_' + boardId;
+
+let cfg = null;
+let boardName = boardId;
+let items = [];
+let sha = null;
+let saving = false, pending = false, dirty = false, errKind = null;
+let readOnly = forceView;
+
+const $ = id => document.getElementById(id);
+
+/* ---------- storage ---------- */
+function loadCfg(){ try { const r=localStorage.getItem(CFG_KEY); return r?JSON.parse(r):null; } catch(e){ return null; } }
+function saveCfg(c){ try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch(e){} }
+function saveCache(){ try { localStorage.setItem(CACHE_KEY, JSON.stringify({boardName, items, dirty, sha})); } catch(e){} }
+function loadCache(){ try { const r=localStorage.getItem(CACHE_KEY); return r?JSON.parse(r):null; } catch(e){ return null; } }
+
+/* ---------- base64 utf-8 ---------- */
+function utf8ToB64(s){ const b=new TextEncoder().encode(s); let o=''; for(let i=0;i<b.length;i++) o+=String.fromCharCode(b[i]); return btoa(o); }
+function b64ToUtf8(b64){ const c=b64.replace(/\s/g,''); const bin=atob(c); const b=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return new TextDecoder().decode(b); }
+
+/* ---------- github (owner writes; anyone reads public) ---------- */
+function apiUrl(owner, repo){ return `https://api.github.com/repos/${owner}/${repo}/contents/boards/${boardId}.json`; }
+function ownerHeaders(){ return { 'Authorization':'Bearer '+cfg.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }; }
+
+// read public with no token (works because repo is public)
+async function publicGet(owner, repo){
+  const res = await fetch(apiUrl(owner, repo) + '?t=' + Date.now(), { headers:{ 'Accept':'application/vnd.github+json' }, cache:'no-store' });
+  if(res.status===404) return {ok:true, missing:true};
+  if(!res.ok) return {ok:false, status:res.status};
+  const data = await res.json();
+  let obj={name:boardId, items:[]};
+  try{ obj = JSON.parse(b64ToUtf8(data.content)); }catch(e){}
+  return {ok:true, name:obj.name||boardId, items:Array.isArray(obj.items)?obj.items:[], sha:data.sha};
+}
+async function ownerGet(){
+  const res = await fetch(apiUrl(cfg.owner, cfg.repo), { headers:ownerHeaders(), cache:'no-store' });
+  if(res.status===404) return {ok:true, missing:true};
+  if(!res.ok) return {ok:false, status:res.status};
+  const data = await res.json();
+  let obj={name:boardId, items:[]};
+  try{ obj = JSON.parse(b64ToUtf8(data.content)); }catch(e){}
+  return {ok:true, name:obj.name||boardId, items:Array.isArray(obj.items)?obj.items:[], sha:data.sha};
+}
+async function ownerPut(curSha){
+  const payload = { name: boardName, items: items };
+  const body = { message:'update board '+boardId+' '+new Date().toISOString(), content:utf8ToB64(JSON.stringify(payload,null,2)) };
+  if(curSha) body.sha=curSha;
+  const res = await fetch(apiUrl(cfg.owner, cfg.repo), { method:'PUT', headers:ownerHeaders(), body:JSON.stringify(body) });
+  if(!res.ok) return {ok:false, status:res.status};
+  const data = await res.json();
+  return {ok:true, sha:data.content?data.content.sha:null};
+}
+
+/* ---------- sync ---------- */
+function setSync(state,text){ const el=$('sync'); el.className='sync'+(state==='saving'?' saving':state==='err'?' err':''); $('synctext').textContent=text; }
+
+async function pushData(){
+  if(readOnly) return;
+  if(saving){ pending=true; return; }
+  saving=true; pending=false; errKind=null; setSync('saving','กำลังซิงค์…');
+  try{
+    let r=await ownerPut(sha);
+    if(!r.ok && r.status===409){ const g=await ownerGet(); if(g.ok && !g.missing){ sha=g.sha; r=await ownerPut(sha); } }
+    if(r.ok){ sha=r.sha; dirty=false; saveCache(); setSync('ok','ซิงค์แล้ว'); }
+    else if(r.status===401||r.status===403){ errKind='perm'; setSync('err','เขียนไม่ได้ · เช็กสิทธิ์ token (แตะ)'); }
+    else if(r.status===404){ errKind='perm'; setSync('err','ไม่พบ repo · เช็กชื่อ (แตะ)'); }
+    else { errKind='net'; setSync('err','ซิงค์ไม่สำเร็จ · แตะลองใหม่'); }
+  }catch(e){ errKind='net'; setSync('err','ออฟไลน์อยู่ · แตะลองใหม่'); }
+  saving=false; if(pending) pushData();
+}
+function changed(){ if(readOnly) return; dirty=true; saveCache(); pushData(); }
+
+async function loadOwner(){
+  const cache=loadCache();
+  if(cache && Array.isArray(cache.items)){ items=cache.items; boardName=cache.boardName||boardId; dirty=!!cache.dirty; sha=cache.sha||null; applyName(); render(); }
+  if(dirty){ pushData(); return; }
+  try{
+    const g=await ownerGet();
+    if(g.ok){
+      if(g.missing){ items=[]; boardName=boardId; sha=null; } // new empty board
+      else { items=g.items; boardName=g.name; sha=g.sha; }
+      dirty=false; saveCache(); applyName(); render(); setSync('ok','ซิงค์แล้ว');
+    } else if(g.status===401||g.status===403){ errKind='perm'; setSync('err','อ่านไม่ได้ · เช็กสิทธิ์ token (แตะ)'); }
+    else { errKind='net'; setSync('err','โหลดไม่สำเร็จ · แตะลองใหม่'); }
+  }catch(e){ errKind='net'; setSync('err','ออฟไลน์อยู่ · แตะลองใหม่'); }
+}
+async function loadView(owner, repo){
+  setSync('saving','กำลังโหลด…');
+  try{
+    const g=await publicGet(owner, repo);
+    if(g.ok){
+      if(g.missing){ items=[]; boardName=boardId; }
+      else { items=g.items; boardName=g.name; }
+      applyName(); render(); setSync('ok','อัปเดตล่าสุด');
+    } else { setSync('err','โหลดไม่สำเร็จ · แตะรีเฟรช'); }
+  }catch(e){ setSync('err','โหลดไม่สำเร็จ · แตะรีเฟรช'); }
+}
+
+/* ---------- date ---------- */
+function dayKey(ts){ const d=new Date(ts); return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate(); }
+function dayLabel(ts){
+  const now=new Date(), d=new Date(ts);
+  const t=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const y=new Date(t); y.setDate(t.getDate()-1);
+  const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  if(dd.getTime()===t.getTime()) return 'วันนี้';
+  if(dd.getTime()===y.getTime()) return 'เมื่อวาน';
+  return d.getDate()+' '+TH_MON[d.getMonth()];
+}
+function timeLabel(ts){ const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+/* ---------- editing (owner only) ---------- */
+function editText(it, txtEl){
+  if(readOnly) return;
+  const input=document.createElement('input'); input.type='text'; input.className='inlineedit'; input.value=it.text;
+  txtEl.replaceWith(input); input.focus(); input.setSelectionRange(input.value.length,input.value.length);
+  let closed=false;
+  const commit=(save)=>{ if(closed)return; closed=true; const v=input.value.trim(); if(save&&v&&v!==it.text){ it.text=v; changed(); } render(); };
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();commit(true);} else if(e.key==='Escape'){e.preventDefault();commit(false);} });
+  input.addEventListener('blur',()=>commit(true));
+}
+function editNote(it, srcEl){
+  if(readOnly) return;
+  const ta=document.createElement('textarea'); ta.className='noteedit'; ta.value=it.note||''; ta.rows=2;
+  ta.placeholder='รายละเอียด เช่น ส่งเมลหา…, นัดประชุมพุธ (Enter ขึ้นบรรทัดใหม่ได้)';
+  srcEl.replaceWith(ta); ta.focus();
+  const grow=()=>{ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; };
+  grow(); ta.setSelectionRange(ta.value.length,ta.value.length);
+  let closed=false;
+  const commit=(save)=>{ if(closed)return; closed=true; if(save){ const v=ta.value.trim(); if((it.note||'')!==v){ it.note=v; changed(); } } render(); };
+  ta.addEventListener('input',grow);
+  ta.addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();commit(true);} else if(e.key==='Escape'){e.preventDefault();commit(false);} });
+  ta.addEventListener('blur',()=>commit(true));
+}
+
+/* ---------- render ---------- */
+function itemEl(it, flash){
+  const el=document.createElement('div'); el.className='item'+(it.done?' done':'')+(flash?' newflash':'');
+  const check=document.createElement('button'); check.className='check'; check.setAttribute('aria-label','ทำเสร็จ'); check.innerHTML=CHECK;
+  if(!readOnly) check.onclick=()=>toggle(it.id);
+  const body=document.createElement('div'); body.className='body';
+  const txt=document.createElement('div'); txt.className='txt'; txt.textContent=it.text; if(!readOnly){ txt.title='แตะเพื่อแก้'; txt.onclick=()=>editText(it, txt); }
+  body.appendChild(txt);
+  if(it.note && it.note.trim()){
+    const note=document.createElement('div'); note.className='note'; note.textContent=it.note; if(!readOnly){ note.title='แตะเพื่อแก้'; note.onclick=()=>editNote(it, note); }
+    body.appendChild(note);
+  } else if(!readOnly){
+    const addn=document.createElement('button'); addn.className='addnote'; addn.textContent='＋ รายละเอียด'; addn.onclick=()=>editNote(it, addn);
+    body.appendChild(addn);
+  }
+  const time=document.createElement('div'); time.className='time'; time.textContent=timeLabel(it.ts);
+  el.appendChild(check); el.appendChild(body); el.appendChild(time);
+  if(!readOnly){ const del=document.createElement('button'); del.className='del'; del.setAttribute('aria-label','ลบ'); del.textContent='✕'; del.onclick=()=>remove(it.id); el.appendChild(del); }
+  return el;
+}
+function render(flashId){
+  const list=$('list'); list.innerHTML='';
+  const active=items.filter(i=>!i.done), done=items.filter(i=>i.done);
+  if(items.length===0){
+    const e=document.createElement('div'); e.className='empty';
+    e.innerHTML = readOnly ? 'ยังไม่มีรายการในกระดานนี้' : 'ยังไม่มีรายการ<br>— เพิ่มอันแรกด้านบนได้เลย';
+    list.appendChild(e); return;
+  }
+  let lastDay=null;
+  active.forEach(it=>{ const k=dayKey(it.ts); if(k!==lastDay){ lastDay=k; const h=document.createElement('div'); h.className='daylabel'; h.textContent=dayLabel(it.ts); list.appendChild(h);} list.appendChild(itemEl(it, it.id===flashId)); });
+  if(done.length){
+    const h=document.createElement('div'); h.className='donehead';
+    let inner='<span>เสร็จแล้ว · '+done.length+'</span>';
+    if(!readOnly) inner+='<button class="clear">ล้างทิ้ง</button>';
+    h.innerHTML=inner;
+    if(!readOnly){ const c=h.querySelector('.clear'); if(c) c.onclick=clearDone; }
+    list.appendChild(h);
+    done.forEach(it=>list.appendChild(itemEl(it,false)));
+  }
+}
+function applyName(){ $('bname').textContent = boardName || boardId; document.title = (boardName||boardId) + ' · กระดาน'; }
+
+/* ---------- actions ---------- */
+function add(){ const box=$('box'); const text=box.value.trim(); if(!text) return; const it={id:Date.now()+''+Math.floor(Math.random()*999), text, note:'', ts:Date.now(), done:false}; items.unshift(it); box.value=''; render(it.id); box.focus(); changed(); }
+function toggle(id){ const it=items.find(i=>i.id===id); if(!it)return; it.done=!it.done; render(); changed(); }
+function remove(id){ items=items.filter(i=>i.id!==id); render(); changed(); }
+function clearDone(){ items=items.filter(i=>!i.done); render(); changed(); }
+
+/* ---------- board bar ---------- */
+function doRename(){ const n=prompt('ตั้งชื่อกระดานนี้:', boardName||boardId); if(n===null) return; boardName=n.trim()||boardId; applyName(); changed(); }
+function doSwitch(){ const b=prompt('พิมพ์ชื่อกระดานที่จะเปิด (อังกฤษ/ตัวเลข เช่น budget-q3):', boardId); if(!b) return; const clean=b.replace(/[^a-zA-Z0-9_-]/g,''); if(clean) location.search='?b='+clean; }
+function doShare(){
+  const owner = (cfg && cfg.owner) ? cfg.owner : PUBLIC_OWNER;
+  const repo = (cfg && cfg.repo) ? cfg.repo : PUBLIC_REPO;
+  const u = new URL(location.origin + location.pathname);
+  u.searchParams.set('b', boardId);
+  u.searchParams.set('view', '1');
+  u.searchParams.set('o', owner);
+  u.searchParams.set('r', repo);
+  const url = u.toString();
+  navigator.clipboard.writeText(url).then(()=>{ flashChip($('shareBtn'),'✓ ก๊อปแล้ว!'); }).catch(()=>{ prompt('ก๊อปลิงก์นี้ส่งให้ทีม:', url); });
+}
+function flashChip(btn, text){ const old=btn.textContent; btn.textContent=text; setTimeout(()=>btn.textContent=old, 1500); }
+
+/* ---------- screens ---------- */
+function showApp(){ $('setup').classList.add('hidden'); $('app').classList.remove('hidden'); if(!readOnly) $('box').focus(); }
+function showSetup(){ $('app').classList.add('hidden'); $('setup').classList.remove('hidden'); $('setupmsg').className='msg'; if(cfg){ $('s_owner').value=cfg.owner||''; $('s_repo').value=cfg.repo||PUBLIC_REPO; $('s_token').value=cfg.token||''; } }
+async function doConnect(){
+  const owner=$('s_owner').value.trim(), repo=$('s_repo').value.trim(), token=$('s_token').value.trim();
+  const msg=$('setupmsg');
+  if(!owner||!repo||!token){ msg.className='msg show bad'; msg.textContent='กรอกให้ครบทั้งสามช่องก่อนนะ'; return; }
+  $('connect').disabled=true; msg.className='msg show'; msg.style.color='var(--muted)'; msg.textContent='กำลังทดสอบ…';
+  cfg={owner,repo,token};
+  const g=await ownerGet();
+  if(!g.ok){ msg.className='msg show bad'; if(g.status===401||g.status===403) msg.innerHTML='token ไม่มีสิทธิ์ · ต้องให้ <b>Contents: Read and write</b> กับ repo <b>'+repo+'</b>'; else if(g.status===404) msg.textContent='หา repo ไม่เจอ · เช็กชื่อ'; else msg.textContent='เชื่อมต่อไม่ได้'; cfg=null; $('connect').disabled=false; return; }
+  const testItems=g.missing?[]:g.items; const testSha=g.missing?null:g.sha; const testName=g.missing?boardId:g.name;
+  boardName=testName; items=testItems; sha=testSha;
+  const w=await ownerPut(sha);
+  if(!w.ok){ msg.className='msg show bad'; if(w.status===401||w.status===403) msg.innerHTML='อ่านได้แต่ <b>เขียนไม่ได้</b> · token ต้องมี <b>Contents: Read and write</b> ของ repo นี้'; else msg.textContent='ทดสอบเขียนไม่ผ่าน'; cfg=null; $('connect').disabled=false; return; }
+  sha=w.sha; dirty=false; saveCache(); saveCfg(cfg);
+  msg.className='msg show ok'; msg.textContent='เชื่อมต่อสำเร็จ! กำลังเข้า…';
+  setTimeout(()=>{ applyName(); render(); showApp(); }, 700);
+  $('connect').disabled=false;
+}
+
+/* ---------- wire ---------- */
+$('box').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); add(); } });
+$('toss').onclick=add;
+$('gear').onclick=showSetup;
+$('connect').onclick=doConnect;
+$('peek').onclick=()=>{ const t=$('s_token'); const show=t.type==='password'; t.type=show?'text':'password'; $('peek').textContent=show?'ซ่อน':'แสดง'; };
+$('s_token').addEventListener('keydown', e=>{ if(e.key==='Enter') doConnect(); });
+$('renameBtn').onclick=doRename;
+$('switchBtn').onclick=doSwitch;
+$('shareBtn').onclick=doShare;
+$('refreshBtn').onclick=()=>loadView(ownerForView(), repoForView());
+$('sync').onclick=()=>{ if(!$('sync').classList.contains('err')) return; if(errKind==='perm'){ showSetup(); return; } if(dirty||pending) pushData(); else if(readOnly) loadView(ownerForView(), repoForView()); else loadOwner(); };
+
+/* view needs owner/repo even without token — take from ?o= &r= or saved cfg */
+function ownerForView(){ return params.get('o') || PUBLIC_OWNER; }
+function repoForView(){ return params.get('r') || PUBLIC_REPO; }
+
+/* ---------- boot ---------- */
+cfg = loadCfg();
+if(readOnly){
+  document.body.classList.add('ro');
+  $('ownerbar').classList.add('hidden');
+  showApp();
+  loadView(ownerForView(), repoForView());
+} else {
+  $('viewbar').classList.add('hidden');
+  if(cfg && cfg.owner && cfg.token){ cfg.repo = cfg.repo || PUBLIC_REPO; showApp(); loadOwner(); }
+  else { showSetup(); }
+}
+</script>
+</body>
+</html>
