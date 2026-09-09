@@ -2,6 +2,13 @@
   "name": "App Man follow up",
   "items": [
     {
+      "id": "178892929384177",
+      "text": "สรุป Error Case ที่ตรวจแล้ว Error + เฉลย",
+      "note": "",
+      "ts": 1788929293841,
+      "done": false
+    },
+    {
       "id": "1788929285067473",
       "text": "สรุป Error Case ที่ตรวจแล้ว Error + เฉลย",
       "note": "",
