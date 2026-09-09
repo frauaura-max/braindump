@@ -2,6 +2,13 @@
   "name": "App Man follow up",
   "items": [
     {
+      "id": "1788929116021849",
+      "text": "สรุป Process เอามาทำ Robot",
+      "note": "",
+      "ts": 1788929116021,
+      "done": false
+    },
+    {
       "id": "1788929088910218",
       "text": "สรุป Process MK เอามาทำ Robot",
       "note": "",
