@@ -2,6 +2,13 @@
   "name": "App Man follow up",
   "items": [
     {
+      "id": "1788929285067473",
+      "text": "สรุป Error Case ที่ตรวจแล้ว Error + เฉลย",
+      "note": "",
+      "ts": 1788929285067,
+      "done": false
+    },
+    {
       "id": "1788929267804538",
       "text": "ทำ ข้อความ IO เพื่อ Train AI",
       "note": "",
